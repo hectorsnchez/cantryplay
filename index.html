@@ -156,9 +156,11 @@
     button:hover{background:var(--primary-dark)}
 
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes fadeDown{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translate(-50%,0)}}
+    @keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
     @keyframes zoomIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
     @keyframes zoomOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.92)}}
+    @keyframes popCenter{from{opacity:0;transform:translate(-50%,-56%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+    @keyframes attentionPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
     /* 🔘 Botón flotante */
     .info-btn{
@@ -179,24 +181,28 @@
       box-shadow:0 6px 18px rgba(0,0,0,0.3);
       z-index:2000;
       user-select:none;
+      animation:attentionPulse 1.8s ease-in-out infinite;
     }
+    .info-btn img{width:26px;height:26px;display:block}
 
     /* 📄 Ventana info */
     .info-window{
       position:fixed;
-      bottom:80px;
-      right:20px;
-      width:300px;
-      max-width:90vw;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      width:min(640px,92vw);
+      max-height:80vh;
+      overflow:auto;
       background:var(--primary);
       color:#fff;
       border-radius:14px;
-      padding:16px;
+      padding:20px;
       box-shadow:0 12px 28px rgba(0,0,0,.4);
       display:none;
       z-index:2001;
-      animation:fadeIn .3s ease;
     }
+    .info-window.open{display:block;animation:popCenter .35s ease}
     .info-window .close{
       position:absolute;
       top:8px;
@@ -211,6 +217,8 @@
       font-size:14px;
       line-height:1.4;
     }
+    /* Aparición escalonada de juegos */
+    .game.appear{animation:fadeDown .45s ease forwards}
   </style>
 </head>
 <body>
@@ -238,7 +246,7 @@
   </main>
 
   <!-- 🟣 Botón flotante info -->
-  <div class="info-btn" id="infoBtn">i</div>
+  <div class="info-btn" id="infoBtn"><img src="ico1.png" alt="Info"></div>
   <div class="info-window" id="infoWindow">
     <div class="close" id="closeInfo">✕</div>
     <p>
@@ -326,8 +334,8 @@
     const infoWindow = document.getElementById("infoWindow");
     const closeInfo = document.getElementById("closeInfo");
 
-    infoBtn.addEventListener("click", ()=>{ infoWindow.style.display="block"; });
-    closeInfo.addEventListener("click", ()=>{ infoWindow.style.display="none"; });
+    infoBtn.addEventListener("click", ()=>{ infoWindow.classList.add('open'); });
+    closeInfo.addEventListener("click", ()=>{ infoWindow.classList.remove('open'); });
 
     const save = () => {
       localStorage.setItem('games', JSON.stringify(games));
@@ -375,6 +383,8 @@
           ${g.video ? `<video class="preview" src="${g.video}" loop muted></video>` : ""}
           <div class='name-badge'>${g.name}</div>
         `;
+        card.classList.add('appear');
+        card.style.animationDelay = `${i*0.06}s`;
         card.addEventListener('click', ()=> openGame(g.embed));
         if(g.video){
           card.addEventListener('mouseenter', ()=>{
