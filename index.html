@@ -315,8 +315,8 @@
   </div>
 
   <script>
-    let games = JSON.parse(localStorage.getItem('games') || '[]');
-    let categories = JSON.parse(localStorage.getItem('categories') || '["Acción","Aventura","Puzzle","Deportes","Estrategia"]');
+    let games = [];
+    let categories = [];
     let activeCategory = 'Todos';
 
     const grid = document.getElementById('grid');
@@ -342,9 +342,20 @@
     infoBtn.addEventListener("click", ()=>{ infoWindow.classList.add('open'); });
     closeInfo.addEventListener("click", ()=>{ infoWindow.classList.remove('open'); });
 
-    const save = () => {
-      localStorage.setItem('games', JSON.stringify(games));
-      localStorage.setItem('categories', JSON.stringify(categories));
+    async function apiGet(path){
+      const r = await fetch(path);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    async function apiPost(path, body){
+      const r = await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    async function apiDelete(path){
+      const r = await fetch(path,{method:'DELETE'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
     }
 
     function sizeClass(sz){
@@ -449,10 +460,9 @@
       const cat  = document.getElementById('gameCategory').value;
       const sz   = document.getElementById('gameSize').value;
       if(!name || !img || !emb){ alert('Completa nombre, imagen y embed'); return; }
-      games.push({name: name, img: img, video: vid, embed: emb, category: cat, size: sz});
-      save();
-      renderGrid();
-      renderAdminLists();
+      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz})
+        .then((row)=>{ games.unshift(row); renderGrid(); renderAdminLists(); })
+        .catch(()=> alert('Error guardando juego'));
     });
 
     function renderAdminLists(){
@@ -473,12 +483,11 @@
       catList.querySelectorAll('.delCat').forEach(btn=>{
         btn.addEventListener('click', (e)=>{
           const i = +e.target.getAttribute('data-i');
-          const removed = categories.splice(i,1)[0];
-          games = games.map(g=> g.category===removed ? {...g, category:'Acción'} : g);
-          save();
-          renderChips();
-          renderGrid();
-          renderAdminLists();
+          const removed = categories[i];
+          apiDelete('/api/categories?name='+encodeURIComponent(removed))
+            .then(()=> Promise.all([apiGet('/api/categories'), apiGet('/api/games')]))
+            .then(([cats, gs])=>{ categories=cats; games=gs; updateFilterUI(); renderAdminLists(); })
+            .catch(()=> alert('Error eliminando categoría'));
         });
       });
 
@@ -493,10 +502,10 @@
       list.querySelectorAll('.delGame').forEach(btn=>{
         btn.addEventListener('click', (e)=>{
           const i = +e.target.getAttribute('data-i');
-          games.splice(i,1);
-          save();
-          renderGrid();
-          renderAdminLists();
+          const id = games[i].id;
+          apiDelete('/api/games?id='+id)
+            .then(()=>{ games.splice(i,1); renderGrid(); renderAdminLists(); })
+            .catch(()=> alert('Error eliminando juego'));
         });
       });
     }
@@ -505,10 +514,10 @@
       const val = document.getElementById('newCategory').value.trim();
       if(!val) return;
       if(!categories.includes(val)){
-        categories.push(val);
-        save();
-        renderChips();
-        renderAdminLists();
+        apiPost('/api/categories', {name: val})
+          .then(()=> apiGet('/api/categories'))
+          .then(cats=>{ categories=cats; renderChips(); renderAdminLists(); })
+          .catch(()=> alert('Error guardando categoría'));
       }
     });
 
@@ -525,14 +534,14 @@
       if(gameFrame.requestFullscreen) gameFrame.requestFullscreen();
     });
 
-    renderChips();
-    renderGrid();
+    Promise.all([apiGet('/api/categories'), apiGet('/api/games')])
+      .then(([cats, gs])=>{ categories=cats; games=gs; renderChips(); renderGrid(); })
+      .catch(()=>{
+        categories = ["Acción","Aventura","Puzzle","Deportes","Estrategia"];
+        games = [];
+        renderChips();
+        renderGrid();
+      });
   </script>
 </body>
 </html>
-
-<script>
-    let games = [];
-    let categories = [];
-    let activeCategory = 'Todos';
-  </script>
