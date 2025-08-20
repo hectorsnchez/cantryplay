@@ -271,6 +271,77 @@
     /* Aparición escalonada de juegos */
     .game.appear{animation:fadeDown .45s ease forwards}
 
+    /* Overlay de móvil antes de cargar juego */
+    .mobile-overlay{
+      position:fixed;
+      inset:0;
+      background:var(--primary);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      z-index:1300;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .3s ease, visibility .3s ease;
+    }
+    .mobile-overlay.show{
+      opacity:1;
+      visibility:visible;
+    }
+    .mobile-device{
+      width:120px;
+      height:200px;
+      border:3px solid #fff;
+      border-radius:20px;
+      background:transparent;
+      position:relative;
+      margin-bottom:20px;
+      transition:transform .6s ease;
+    }
+    .mobile-arrow{
+      position:absolute;
+      width:40px;
+      height:40px;
+      border:3px solid #fff;
+      border-radius:50%;
+      background:var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:20px;
+      font-weight:bold;
+      transition:all .4s ease;
+    }
+    .mobile-arrow.top-right{
+      top:-20px;
+      right:-20px;
+    }
+    .mobile-arrow.bottom-left{
+      bottom:-20px;
+      left:-20px;
+    }
+    .mobile-text{
+      color:#fff;
+      font-size:18px;
+      font-weight:500;
+      text-align:center;
+      opacity:0;
+      transform:translateY(10px);
+      transition:all .4s ease;
+    }
+    .mobile-text.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+    .mobile-overlay.rotate .mobile-device{
+      transform:rotate(90deg);
+    }
+    .mobile-overlay.rotate .mobile-arrow{
+      transform:rotate(-90deg);
+    }
+
     /* Hover solo en dispositivos con puntero fino (evita efectos en móviles) */
     @media (hover: none), (pointer: coarse) {
       .game:hover .game-inner{transform:none;box-shadow:none}
@@ -341,6 +412,15 @@
     </div>
   </div>
 
+  <!-- Overlay de móvil antes de cargar juego -->
+  <div id="mobileOverlay" class="mobile-overlay">
+    <div class="mobile-device">
+      <div class="mobile-arrow top-right">→</div>
+      <div class="mobile-arrow bottom-left">←</div>
+    </div>
+    <div id="mobileText" class="mobile-text">No disponible en smartphone</div>
+  </div>
+
   <div id="workersPanel" class="workers-panel" aria-hidden="true">
     <div class="panel">
       <h2><img src="logo.png" alt="Cantry"/> Acceso Privado</h2>
@@ -362,6 +442,14 @@
           <option value="mediano">Mediano</option>
           <option value="grande">Grande</option>
         </select>
+        <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+          <input type="checkbox" id="gameNoMobile" style="width:auto;margin:0;">
+          <label for="gameNoMobile">No disponible en móvil</label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+          <input type="checkbox" id="gameRotateMobile" style="width:auto;margin:0;">
+          <label for="gameRotateMobile">Girar móvil horizontalmente</label>
+        </div>
         <button id="btnAddGame">Añadir juego</button>
 
         <hr />
@@ -466,7 +554,7 @@
         `;
         card.classList.add('appear');
         card.style.animationDelay = `${i*0.06}s`;
-        card.addEventListener('click', ()=> openGame(g.embed));
+        card.addEventListener('click', ()=> openGame(g.embed, g.noMobile, g.rotateMobile));
         if(g.video){
           card.addEventListener('mouseenter', ()=>{
             const v = card.querySelector('.preview');
@@ -524,8 +612,11 @@
       const emb  = document.getElementById('gameEmbed').value.trim();
       const cat  = document.getElementById('gameCategory').value;
       const sz   = document.getElementById('gameSize').value;
+      const noMobile = document.getElementById('gameNoMobile').checked;
+      const rotateMobile = document.getElementById('gameRotateMobile').checked;
+
       if(!name || !img || !emb){ alert('Completa nombre, imagen y embed'); return; }
-      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz})
+      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz, noMobile: noMobile, rotateMobile: rotateMobile})
         .then((row)=>{ games.unshift(row); renderGrid(); renderAdminLists(); })
         .catch(()=> alert('Error guardando juego'));
     });
@@ -563,14 +654,20 @@
         row.className = 'game-item';
         row.draggable = true;
         row.dataset.index = i;
+        const mobileInfo = [];
+        if(g.noMobile) mobileInfo.push('📱 No móvil');
+        if(g.rotateMobile) mobileInfo.push('🔄 Girar');
+        
         row.innerHTML = `
           <span class="drag-handle">⋮⋮</span>
           <div class="game-info">
             <b>${g.name}</b> – ${g.category} – ${g.size}
+            ${mobileInfo.length > 0 ? `<br><small style="color:#666;">${mobileInfo.join(' • ')}</small>` : ''}
           </div>
           <div class="game-actions">
             <button class="move-up" ${i === 0 ? 'disabled' : ''}>↑</button>
             <button class="move-down" ${i === games.length - 1 ? 'disabled' : ''}>↓</button>
+            <button data-i='${i}' class='editGame'>Editar</button>
             <button data-i='${i}' class='delGame'>Eliminar</button>
           </div>
         `;
@@ -672,10 +769,44 @@
       }
     });
 
-    function openGame(embed){
-      gameFrame.src = embed;
-      gameModal.style.display='flex';
-      modalCard.classList.remove('hide');
+    function openGame(embed, noMobile = false, rotateMobile = false){
+      const mobileOverlay = document.getElementById('mobileOverlay');
+      const mobileText = document.getElementById('mobileText');
+      
+      if(noMobile || rotateMobile){
+        // Mostrar overlay de móvil
+        mobileOverlay.classList.add('show');
+        
+        if(rotateMobile){
+          mobileOverlay.classList.add('rotate');
+          mobileText.textContent = 'Gira el smartphone horizontalmente';
+        } else {
+          mobileOverlay.classList.remove('rotate');
+          mobileText.textContent = 'No disponible en smartphone';
+        }
+        
+        // Secuencia de animaciones
+        setTimeout(() => {
+          mobileText.classList.add('show');
+        }, 1000);
+        
+        setTimeout(() => {
+          mobileText.classList.remove('show');
+          mobileOverlay.classList.remove('show', 'rotate');
+          
+          // Cargar el juego después de las animaciones
+          setTimeout(() => {
+            gameFrame.src = embed;
+            gameModal.style.display='flex';
+            modalCard.classList.remove('hide');
+          }, 300);
+        }, 2000);
+      } else {
+        // Cargar directamente sin overlay
+        gameFrame.src = embed;
+        gameModal.style.display='flex';
+        modalCard.classList.remove('hide');
+      }
     }
     btnClose.addEventListener('click', ()=>{
       modalCard.classList.add('hide');
