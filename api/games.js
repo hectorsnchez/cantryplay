@@ -10,7 +10,9 @@ async function ensureSchema(){
     video TEXT,
     embed TEXT NOT NULL,
     category TEXT,
-    size TEXT
+    size TEXT,
+    noMobile BOOLEAN DEFAULT FALSE,
+    rotateMobile BOOLEAN DEFAULT FALSE
   )`;
 }
 
@@ -27,13 +29,13 @@ module.exports = async function handler(req, res){
   }
   if(req.method === 'POST'){
     try{
-      const { name, img, video, embed, category, size } = req.body || {};
+      const { name, img, video, embed, category, size, noMobile, rotateMobile } = req.body || {};
       if(!name || !img || !embed){
         return res.status(400).json({ error:'Faltan campos obligatorios' });
       }
       const { rows } = await sql`
-        INSERT INTO games(name,img,video,embed,category,size)
-        VALUES (${name}, ${img}, ${video||''}, ${embed}, ${category||'Acción'}, ${size||'pequeño'})
+        INSERT INTO games(name,img,video,embed,category,size,noMobile,rotateMobile)
+        VALUES (${name}, ${img}, ${video||''}, ${embed}, ${category||'Acción'}, ${size||'pequeño'}, ${noMobile||false}, ${rotateMobile||false})
         RETURNING *
       `;
       res.status(201).json(rows[0]);
@@ -57,4 +59,5 @@ module.exports = async function handler(req, res){
   res.setHeader('Allow', ['GET','POST','DELETE']);
   res.status(405).end('Method Not Allowed');
 }
+
 
