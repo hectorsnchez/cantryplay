@@ -96,7 +96,7 @@
     .games-grid{
       display:grid;gap:18px;padding:18px 20px 32px;
       grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-      grid-auto-rows:160px;
+      grid-auto-rows:auto;
       grid-auto-flow:row;
     }
 
@@ -106,12 +106,12 @@
       border-radius:20px;
       overflow:hidden;
       cursor:pointer;
-      aspect-ratio:1/1;
     }
     .game-inner{
       position:relative;
       width:100%;
-      height:100%;
+      height:auto;
+      aspect-ratio:1/1;
       border-radius:20px;
       overflow:hidden;
       background:#000;
@@ -151,9 +151,9 @@
     }
 
     /* 🟦 Tamaños cuadrados */
-    .size-sm{grid-column:span 1;grid-row:span 1}
-    .size-md{grid-column:span 2;grid-row:span 2}
-    .size-lg{grid-column:span 3;grid-row:span 3}
+    .size-sm{grid-column:span 1}
+    .size-md{grid-column:span 2}
+    .size-lg{grid-column:span 3}
 
     /* 🔒 Paneles y modales mantienen igual */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center;z-index:1200}
