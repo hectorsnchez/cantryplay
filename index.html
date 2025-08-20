@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cantry Play - Tus juegos favoritos</title>
-  <meta name="description" content="Cantry Play es tu nueva pagina web de juegos en la que disfrutarás de miles de juegos sin descargar nada! Entra y descubrelos. Cantry Play.">
+  <title>Cantry - Juegos Online</title>
+  <meta name="description" content="Cantry Play es tu nueva página web de juegos en la que disfrutarás de montones de juegos sin descargar nada. ¡Entra y descúbrelos! Cantry Play.">
+  <link rel="icon" href="favicon.png" type="image/png" />
+
   <!-- Montserrat 500 + 700 (Bold) -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
@@ -48,7 +50,8 @@
       animation:fadeDown .45s ease;
       justify-content:center;
     }
-    .logo{height:42px;width:auto;display:block}
+    .logo{height:42px;width:auto;display:block;transition:transform .2s ease}
+    .logo:hover{transform:scale(1.08)}
 
     /* 🔎 Buscador */
     .search-wrap{flex:1;display:flex;justify-content:center}
@@ -102,11 +105,19 @@
     .game{
       position:relative;
       border-radius:20px;
-      overflow:hidden;
+      overflow:visible;
       cursor:pointer;
       aspect-ratio:1/1;
-      transition:transform .25s ease, box-shadow .25s ease;
-      transform-origin:center;
+    }
+    .game-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius:20px;
+      overflow:hidden;
+      background:#000;
+      transition:transform .22s ease, box-shadow .22s ease;
+      will-change:transform;
     }
     .game img,
     .game video.preview{
@@ -114,11 +125,7 @@
       object-fit:cover;
       display:block;
     }
-    .game:hover{
-      transform:translateY(-3px) scale(1.05);
-      box-shadow:0 18px 44px rgba(0,0,0,.35);
-      z-index:10;
-    }
+    .game:hover .game-inner{transform:translateY(-3px) scale(1.05);box-shadow:0 18px 44px rgba(0,0,0,.35);}
 
     /* ✅ Nombre con sombra en vez de rectángulo */
     .name-badge{
@@ -146,14 +153,7 @@
 
     /* 🟦 Tamaños cuadrados */
     .size-sm{grid-column:span 1;grid-row:span 1}
-    .size-md{
-      grid-column:span 2;
-      grid-row:span 2;
-      margin-bottom:18px;
-    }
-    .size-md:nth-child(even){
-      margin-top:18px;
-    }
+    .size-md{grid-column:span 2;grid-row:span 2}
     .size-lg{grid-column:span 3;grid-row:span 3}
 
     /* 🔒 Paneles y modales mantienen igual */
@@ -277,7 +277,9 @@
 
   <header>
     <div class="header-inner">
-      <img src="logo.png" alt="Cantry" class="logo" />
+      <a href="https://cantryplay.vercel.app" target="_self" rel="noopener">
+        <img src="logo.png" alt="Cantry" class="logo" />
+      </a>
       <div class="search-wrap">
         <!-- 🔎 Input sin icono -->
         <input id="searchInput" type="text" class="search-input" placeholder="Buscar juegos..." autocomplete="off" />
@@ -442,9 +444,11 @@
         const card = document.createElement('div');
         card.className = `game ${sizeClass(g.size)}`;
         card.innerHTML = `
-          <img src="${g.img}" alt="${g.name}" class="thumb">
-          ${g.video ? `<video class="preview" src="${g.video}" loop muted></video>` : ""}
-          <div class='name-badge'>${g.name}</div>
+          <div class="game-inner">
+            <img src="${g.img}" alt="${g.name}" class="thumb">
+            ${g.video ? `<video class="preview" src="${g.video}" loop muted></video>` : ""}
+            <div class='name-badge'>${g.name}</div>
+          </div>
         `;
         card.classList.add('appear');
         card.style.animationDelay = `${i*0.06}s`;
@@ -678,4 +682,3 @@
   </script>
 </body>
 </html>
-
