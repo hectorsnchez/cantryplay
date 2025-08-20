@@ -20,8 +20,8 @@ module.exports = async function handler(req, res){
   await ensureSchema();
   if(req.method === 'GET'){
     try{
-      const { rows } = await sql`SELECT * FROM games ORDER BY id DESC`;
-      res.status(200).json(rows);
+      const { rows } = await sql`SELECT name FROM categories ORDER BY name ASC`;
+      res.status(200).json(rows.map(r => r.name));
     }catch(e){
       res.status(500).json({ error:'DB error' });
     }
@@ -29,16 +29,11 @@ module.exports = async function handler(req, res){
   }
   if(req.method === 'POST'){
     try{
-      const { name, img, video, embed, category, size, noMobile, rotateMobile } = req.body || {};
-      if(!name || !img || !embed){
-        return res.status(400).json({ error:'Faltan campos obligatorios' });
-      }
-      const { rows } = await sql`
-        INSERT INTO games(name,img,video,embed,category,size,noMobile,rotateMobile)
-        VALUES (${name}, ${img}, ${video||''}, ${embed}, ${category||'Acción'}, ${size||'pequeño'}, ${noMobile||false}, ${rotateMobile||false})
-        RETURNING *
-      `;
-      res.status(201).json(rows[0]);
+      const { name } = req.body || {};
+      if(!name || !String(name).trim()) return res.status(400).json({ error:'Nombre inválido' });
+      const n = String(name).trim();
+      await sql`INSERT INTO categories(name) VALUES(${n}) ON CONFLICT (name) DO NOTHING`;
+      res.status(201).json({ name:n });
     }catch(e){
       res.status(500).json({ error:'DB error' });
     }
@@ -46,10 +41,11 @@ module.exports = async function handler(req, res){
   }
   if(req.method === 'DELETE'){
     try{
-      const id = Number(req.query.id);
-      if(!Number.isInteger(id)) return res.status(400).json({ error:'ID inválido' });
-      const { rowCount } = await sql`DELETE FROM games WHERE id = ${id}`;
-      if(rowCount === 0) return res.status(404).json({ error:'No encontrado' });
+      const name = req.query.name;
+      if(!name) return res.status(400).json({ error:'Nombre requerido' });
+      if(name === 'Acción') return res.status(400).json({ error:'No se puede eliminar la categoría predeterminada' });
+      await sql`UPDATE games SET category = 'Acción' WHERE category = ${name}`;
+      await sql`DELETE FROM categories WHERE name = ${name}`;
       res.status(200).json({ ok:true });
     }catch(e){
       res.status(500).json({ error:'DB error' });
