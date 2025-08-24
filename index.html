@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cantry - Juegos Online</title>
+  <title>Cantry Play</title>
+  <meta name="description" content="Cantry Play es tu nueva página web de juegos en la que disfrutarás de miles de juegos sin descargar nada. ¡Entra y descúbrelos! Cantry Play." />
+
   <link rel="icon" href="favicon.png" type="image/png" />
 
   <!-- Montserrat 500 + 700 (Bold) -->
@@ -554,7 +556,7 @@
         `;
         card.classList.add('appear');
         card.style.animationDelay = `${i*0.06}s`;
-        card.addEventListener('click', ()=> openGame(g.embed, g.noMobile, g.rotateMobile));
+        card.addEventListener('click', ()=> openGame(g.embed, g.nomobile, g.rotatemobile));
         if(g.video){
           card.addEventListener('mouseenter', ()=>{
             const v = card.querySelector('.preview');
@@ -612,11 +614,11 @@
       const emb  = document.getElementById('gameEmbed').value.trim();
       const cat  = document.getElementById('gameCategory').value;
       const sz   = document.getElementById('gameSize').value;
-      const noMobile = document.getElementById('gameNoMobile').checked;
-      const rotateMobile = document.getElementById('gameRotateMobile').checked;
+      const nomobile = document.getElementById('gameNoMobile').checked;
+      const rotatemobile = document.getElementById('gameRotateMobile').checked;
 
       if(!name || !img || !emb){ alert('Completa nombre, imagen y embed'); return; }
-      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz, noMobile: noMobile, rotateMobile: rotateMobile})
+      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz, nomobile: nomobile, rotatemobile: rotatemobile})
         .then((row)=>{ games.unshift(row); renderGrid(); renderAdminLists(); })
         .catch(()=> alert('Error guardando juego'));
     });
@@ -655,8 +657,8 @@
         row.draggable = true;
         row.dataset.index = i;
         const mobileInfo = [];
-        if(g.noMobile) mobileInfo.push('📱 No móvil');
-        if(g.rotateMobile) mobileInfo.push('🔄 Girar');
+        if(g.nomobile) mobileInfo.push('📱 No móvil');
+        if(g.rotatemobile) mobileInfo.push('🔄 Girar');
         
         row.innerHTML = `
           <span class="drag-handle">⋮⋮</span>
@@ -769,15 +771,15 @@
       }
     });
 
-    function openGame(embed, noMobile = false, rotateMobile = false){
+    function openGame(embed, nomobile = false, rotatemobile = false){
       const mobileOverlay = document.getElementById('mobileOverlay');
       const mobileText = document.getElementById('mobileText');
       
-      if(noMobile || rotateMobile){
+      if(nomobile || rotatemobile){
         // Mostrar overlay de móvil
         mobileOverlay.classList.add('show');
         
-        if(rotateMobile){
+        if(rotatemobile){
           mobileOverlay.classList.add('rotate');
           mobileText.textContent = 'Gira el smartphone horizontalmente';
         } else {
