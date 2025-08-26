@@ -301,28 +301,22 @@
       margin-bottom:20px;
       transition:transform .6s ease;
     }
-    .mobile-arrow{
+    .mobile-diagonal{
       position:absolute;
-      width:40px;
-      height:40px;
-      border:3px solid #fff;
-      border-radius:50%;
-      background:var(--primary);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-size:20px;
-      font-weight:bold;
-      transition:all .4s ease;
+      left:-30%;
+      width:160%;
+      height:4px;
+      background:#fff;
+      top:-20%;
+      transform:rotate(-45deg) translateY(-40%);
+      box-shadow:0 0 0 3px var(--primary);
+      border-radius:2px;
+      animation:diagonalSweep 1.2s ease forwards;
     }
-    .mobile-arrow.top-right{
-      top:-20px;
-      right:-20px;
-    }
-    .mobile-arrow.bottom-left{
-      bottom:-20px;
-      left:-20px;
+    @keyframes diagonalSweep{
+      0%{ opacity:0; transform:rotate(-45deg) translateY(-40%); }
+      20%{ opacity:1; }
+      100%{ opacity:1; transform:rotate(-45deg) translateY(40%); }
     }
     .mobile-text{
       color:#fff;
@@ -340,8 +334,14 @@
     .mobile-overlay.rotate .mobile-device{
       transform:rotate(90deg);
     }
-    .mobile-overlay.rotate .mobile-arrow{
-      transform:rotate(-90deg);
+    .mobile-overlay.rotate .mobile-diagonal{
+      transform:rotate(-135deg) translateY(-40%);
+      animation:diagonalSweepRotate 1.2s ease forwards;
+    }
+    @keyframes diagonalSweepRotate{
+      0%{ opacity:0; transform:rotate(-135deg) translateY(-40%); }
+      20%{ opacity:1; }
+      100%{ opacity:1; transform:rotate(-135deg) translateY(40%); }
     }
 
     /* Hover solo en dispositivos con puntero fino (evita efectos en móviles) */
@@ -417,8 +417,7 @@
   <!-- Overlay de móvil antes de cargar juego -->
   <div id="mobileOverlay" class="mobile-overlay">
     <div class="mobile-device">
-      <div class="mobile-arrow top-right">→</div>
-      <div class="mobile-arrow bottom-left">←</div>
+      <div class="mobile-diagonal"></div>
     </div>
     <div id="mobileText" class="mobile-text">No disponible en smartphone</div>
   </div>
