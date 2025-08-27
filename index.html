@@ -357,6 +357,11 @@
     @media (max-width: 680px){
       .games-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); grid-auto-rows:140px; }
       .size-md, .size-lg{ grid-column:span 1; grid-row:span 1; }
+      /* Forzar tarjetas cuadradas en móvil */
+      .game{ aspect-ratio:1/1; height:auto; }
+      .game-inner{ height:100%; }
+      /* Ocultar botón flotante de información en móvil */
+      .info-btn{ display:none; }
     }
   </style>
 </head>
