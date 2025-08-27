@@ -778,14 +778,14 @@
       if(nomobile || rotatemobile){
         // Mostrar overlay de móvil
         mobileOverlay.classList.add('show');
-        
-        if(rotatemobile){
-          mobileOverlay.classList.add('rotate');
-          mobileText.textContent = 'Girar el móvil horizontalmente';
-        } else {
-          mobileOverlay.classList.remove('rotate');
-          mobileText.textContent = 'No disponible en smartphone';
-        }
+        // Asegurar estado inicial sin rotación, luego añadir en el siguiente frame para forzar transición
+        mobileOverlay.classList.remove('rotate');
+        mobileText.textContent = rotatemobile ? 'Girar el móvil horizontalmente' : 'No disponible en smartphone';
+        requestAnimationFrame(() => {
+          if(rotatemobile){
+            mobileOverlay.classList.add('rotate');
+          }
+        });
         
         // Secuencia de animaciones
         // Reiniciar animación del dispositivo y diagonal
