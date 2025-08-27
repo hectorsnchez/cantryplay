@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -339,7 +339,9 @@
     }
     .mobile-overlay.rotate .mobile-device{
       transform:rotate(90deg);
+      transition:transform .6s ease;
     }
+    .mobile-overlay.rotate .mobile-diagonal{ display:none; }
     /* The same diagonal works for rotate; parent device rotates */
 
     /* Hover solo en dispositivos con puntero fino (evita efectos en móviles) */
@@ -553,7 +555,7 @@
         `;
         card.classList.add('appear');
         card.style.animationDelay = `${i*0.06}s`;
-        card.addEventListener('click', ()=> openGame(g.embed, g.nomobile, g.rotatemobile));
+        card.addEventListener('click', ()=> openGame(g.embed, g.noMobile, g.rotateMobile));
         if(g.video){
           card.addEventListener('mouseenter', ()=>{
             const v = card.querySelector('.preview');
@@ -615,7 +617,7 @@
       const rotatemobile = document.getElementById('gameRotateMobile').checked;
 
       if(!name || !img || !emb){ alert('Completa nombre, imagen y embed'); return; }
-      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz, nomobile: nomobile, rotatemobile: rotatemobile})
+      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz, noMobile: nomobile, rotateMobile: rotatemobile})
         .then((row)=>{ games.unshift(row); renderGrid(); renderAdminLists(); })
         .catch(()=> alert('Error guardando juego'));
     });
@@ -654,8 +656,8 @@
         row.draggable = true;
         row.dataset.index = i;
         const mobileInfo = [];
-        if(g.nomobile) mobileInfo.push('📱 No móvil');
-        if(g.rotatemobile) mobileInfo.push('🔄 Girar');
+        if(g.noMobile) mobileInfo.push('📱 No móvil');
+        if(g.rotateMobile) mobileInfo.push('🔄 Girar');
         
         row.innerHTML = `
           <span class="drag-handle">⋮⋮</span>
@@ -771,6 +773,7 @@
     function openGame(embed, nomobile = false, rotatemobile = false){
       const mobileOverlay = document.getElementById('mobileOverlay');
       const mobileText = document.getElementById('mobileText');
+      const mobileDevice = document.querySelector('.mobile-device');
       
       if(nomobile || rotatemobile){
         // Mostrar overlay de móvil
@@ -778,21 +781,25 @@
         
         if(rotatemobile){
           mobileOverlay.classList.add('rotate');
-          mobileText.textContent = 'Gira el smartphone horizontalmente';
+          mobileText.textContent = 'Girar el móvil horizontalmente';
         } else {
           mobileOverlay.classList.remove('rotate');
           mobileText.textContent = 'No disponible en smartphone';
         }
         
         // Secuencia de animaciones
-        setTimeout(() => {
-          mobileText.classList.add('show');
-        }, 1000);
+        // Reiniciar animación del dispositivo y diagonal
+        mobileDevice.style.animation = 'none';
+        const diagonal = mobileDevice.querySelector('.mobile-diagonal');
+        if(diagonal){ diagonal.style.animation = 'none'; void diagonal.offsetWidth; diagonal.style.animation = ''; }
+        void mobileDevice.offsetWidth; // reflow
+        
+        mobileText.classList.remove('show');
+        setTimeout(() => { mobileText.classList.add('show'); }, 50);
         
         setTimeout(() => {
           mobileText.classList.remove('show');
           mobileOverlay.classList.remove('show', 'rotate');
-          
           // Cargar el juego después de las animaciones
           setTimeout(() => {
             gameFrame.src = embed;
