@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -303,20 +303,26 @@
     }
     .mobile-diagonal{
       position:absolute;
-      left:-30%;
-      width:160%;
-      height:4px;
+      left:-50%;
+      width:200%;
+      height:5px;
       background:#fff;
-      top:-20%;
-      transform:rotate(-45deg) translateY(-40%);
+      top:50%;
+      transform:rotate(-45deg) translateY(-60%);
+      transform-origin:center;
+      opacity:0;
       box-shadow:0 0 0 3px var(--primary);
       border-radius:2px;
+      z-index:1;
+      pointer-events:none;
+    }
+    .mobile-overlay.show .mobile-diagonal{
       animation:diagonalSweep 1.2s ease forwards;
     }
     @keyframes diagonalSweep{
-      0%{ opacity:0; transform:rotate(-45deg) translateY(-40%); }
+      0%{ opacity:0; transform:rotate(-45deg) translateY(-60%); }
       20%{ opacity:1; }
-      100%{ opacity:1; transform:rotate(-45deg) translateY(40%); }
+      100%{ opacity:1; transform:rotate(-45deg) translateY(0); }
     }
     .mobile-text{
       color:#fff;
@@ -334,15 +340,7 @@
     .mobile-overlay.rotate .mobile-device{
       transform:rotate(90deg);
     }
-    .mobile-overlay.rotate .mobile-diagonal{
-      transform:rotate(-135deg) translateY(-40%);
-      animation:diagonalSweepRotate 1.2s ease forwards;
-    }
-    @keyframes diagonalSweepRotate{
-      0%{ opacity:0; transform:rotate(-135deg) translateY(-40%); }
-      20%{ opacity:1; }
-      100%{ opacity:1; transform:rotate(-135deg) translateY(40%); }
-    }
+    /* The same diagonal works for rotate; parent device rotates */
 
     /* Hover solo en dispositivos con puntero fino (evita efectos en móviles) */
     @media (hover: none), (pointer: coarse) {
