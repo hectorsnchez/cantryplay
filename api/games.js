@@ -21,7 +21,19 @@ module.exports = async function handler(req, res){
   if(req.method === 'GET'){
     try{
       const { rows } = await sql`SELECT * FROM games ORDER BY id DESC`;
-      res.status(200).json(rows);
+      // Normalize keys to camelCase for frontend consistency
+      const normalized = rows.map(r => ({
+        id: r.id,
+        name: r.name,
+        img: r.img,
+        video: r.video,
+        embed: r.embed,
+        category: r.category,
+        size: r.size,
+        noMobile: r.nomobile ?? r.noMobile ?? false,
+        rotateMobile: r.rotatemobile ?? r.rotateMobile ?? false,
+      }));
+      res.status(200).json(normalized);
     }catch(e){
       res.status(500).json({ error:'DB error' });
     }
@@ -59,5 +71,3 @@ module.exports = async function handler(req, res){
   res.setHeader('Allow', ['GET','POST','DELETE']);
   res.status(405).end('Method Not Allowed');
 }
-
-
