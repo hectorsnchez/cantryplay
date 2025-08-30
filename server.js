@@ -26,7 +26,10 @@ db.serialize(() => {
     video TEXT,
     embed TEXT NOT NULL,
     category TEXT,
-    size TEXT
+    size TEXT,
+    noMobile BOOLEAN DEFAULT FALSE,
+    rotateMobile BOOLEAN DEFAULT FALSE,
+    position INTEGER DEFAULT 0
   )`);
 
   // Seed default categories if empty
@@ -86,23 +89,30 @@ app.delete('/api/categories/:name', (req, res) => {
 
 // Games API
 app.get('/api/games', (req, res) => {
-  db.all('SELECT * FROM games ORDER BY id DESC', (err, rows) => {
+  db.all('SELECT * FROM games ORDER BY position ASC, id DESC', (err, rows) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     res.json(rows);
   });
 });
 
 app.post('/api/games', (req, res) => {
-  const { name, img, video, embed, category, size } = req.body || {};
+  const { name, img, video, embed, category, size, noMobile, rotateMobile } = req.body || {};
   if (!name || !img || !embed) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
-  const sql = 'INSERT INTO games(name,img,video,embed,category,size) VALUES (?,?,?,?,?,?)';
-  db.run(sql, [name, img, video || '', embed, category || 'Acción', size || 'pequeño'], function(err) {
+  
+  // Obtener la posición más alta y añadir 1
+  db.get('SELECT MAX(position) as maxPos FROM games', (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
-    db.get('SELECT * FROM games WHERE id = ?', [this.lastID], (err2, row) => {
-      if (err2) return res.status(500).json({ error: 'DB error' });
-      res.status(201).json(row);
+    const nextPosition = (row.maxPos || 0) + 1;
+    
+    const sql = 'INSERT INTO games(name,img,video,embed,category,size,noMobile,rotateMobile,position) VALUES (?,?,?,?,?,?,?,?,?)';
+    db.run(sql, [name, img, video || '', embed, category || 'Acción', size || 'pequeño', noMobile || false, rotateMobile || false, nextPosition], function(err) {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      db.get('SELECT * FROM games WHERE id = ?', [this.lastID], (err2, row) => {
+        if (err2) return res.status(500).json({ error: 'DB error' });
+        res.status(201).json(row);
+      });
     });
   });
 });
@@ -117,7 +127,50 @@ app.delete('/api/games/:id', (req, res) => {
   });
 });
 
+// Actualizar juego
+app.put('/api/games/:id', (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido' });
+  
+  const { name, img, video, embed, category, size, noMobile, rotateMobile } = req.body || {};
+  if (!name || !img || !embed) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  
+  const sql = 'UPDATE games SET name=?, img=?, video=?, embed=?, category=?, size=?, noMobile=?, rotateMobile=? WHERE id=?';
+  db.run(sql, [name, img, video || '', embed, category || 'Acción', size || 'pequeño', noMobile || false, rotateMobile || false, id], function(err) {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (this.changes === 0) return res.status(404).json({ error: 'No encontrado' });
+    
+    // Devolver el juego actualizado
+    db.get('SELECT * FROM games WHERE id = ?', [id], (err2, row) => {
+      if (err2) return res.status(500).json({ error: 'DB error' });
+      res.json(row);
+    });
+  });
+});
+
+// Actualizar orden de juegos
+app.post('/api/games/reorder', (req, res) => {
+  const { gameIds } = req.body || {};
+  if (!Array.isArray(gameIds)) {
+    return res.status(400).json({ error: 'Se requiere array de IDs' });
+  }
+  
+  db.serialize(() => {
+    const stmt = db.prepare('UPDATE games SET position = ? WHERE id = ?');
+    gameIds.forEach((id, index) => {
+      stmt.run(index + 1, id);
+    });
+    stmt.finalize((err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ ok: true });
+    });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor iniciado en http://localhost:${PORT}`);
 });
+
 
