@@ -395,7 +395,12 @@
       .size-lg{ grid-column:span 2; grid-row:span 2; }
     }
     @media (max-width: 680px){
-      .games-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); grid-auto-rows:140px; }
+      .games-grid{ 
+        grid-template-columns:repeat(3,1fr); 
+        grid-auto-rows:140px; 
+        gap:12px;
+        padding:16px 12px 24px;
+      }
       .size-md, .size-lg{ grid-column:span 1; grid-row:span 1; }
       /* Forzar tarjetas cuadradas en móvil */
       .game{ aspect-ratio:1/1; height:auto; }
