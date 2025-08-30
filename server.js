@@ -26,7 +26,9 @@ db.serialize(() => {
     video TEXT,
     embed TEXT NOT NULL,
     category TEXT,
-    size TEXT
+    size TEXT,
+    noMobile BOOLEAN DEFAULT FALSE,
+    rotateMobile BOOLEAN DEFAULT FALSE
   )`);
 
   // Seed default categories if empty
@@ -114,6 +116,29 @@ app.delete('/api/games/:id', (req, res) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (this.changes === 0) return res.status(404).json({ error: 'No encontrado' });
     res.json({ ok: true });
+  });
+});
+
+// Actualizar juego
+app.put('/api/games/:id', (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido' });
+  
+  const { name, img, video, embed, category, size, noMobile, rotateMobile } = req.body || {};
+  if (!name || !img || !embed) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  
+  const sql = 'UPDATE games SET name=?, img=?, video=?, embed=?, category=?, size=?, noMobile=?, rotateMobile=? WHERE id=?';
+  db.run(sql, [name, img, video || '', embed, category || 'Acción', size || 'pequeño', noMobile || false, rotateMobile || false, id], function(err) {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (this.changes === 0) return res.status(404).json({ error: 'No encontrado' });
+    
+    // Devolver el juego actualizado
+    db.get('SELECT * FROM games WHERE id = ?', [id], (err2, row) => {
+      if (err2) return res.status(500).json({ error: 'DB error' });
+      res.json(row);
+    });
   });
 });
 

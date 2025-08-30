@@ -765,14 +765,19 @@
         return;
       }
       
-      // Actualizar el juego en el array local
-      Object.assign(game, updatedGame);
-      
-      // Aquí podrías hacer una llamada a la API para guardar los cambios
-      // Por ahora solo actualizamos localmente
-      renderGrid();
-      renderAdminLists();
-      closeEditModal();
+      // Guardar en la base de datos
+      apiPut('/api/games/' + game.id, updatedGame)
+        .then((updatedGameData) => {
+          // Actualizar el juego en el array local con los datos del servidor
+          Object.assign(game, updatedGameData);
+          renderGrid();
+          renderAdminLists();
+          closeEditModal();
+          alert('Juego actualizado correctamente');
+        })
+        .catch((error) => {
+          alert('Error al actualizar el juego: ' + error.message);
+        });
     });
 
     btnCancelEdit.addEventListener('click', closeEditModal);
