@@ -98,11 +98,16 @@
     .lock-ico{width:18px;height:18px;display:inline-block}
 
     main{padding-top:120px}
+    
+    /* 🎮 Grid mejorado para evitar amontonamiento vertical */
     .games-grid{
-      display:grid;gap:18px;padding:18px 20px 32px;
-      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-      grid-auto-rows:160px;
-      grid-auto-flow:row;
+      display:grid;
+      gap:16px;
+      padding:18px 20px 32px;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      grid-auto-rows:140px;
+      max-width:1200px;
+      margin:0 auto;
     }
 
     /* 🎮 Tarjetas cuadradas */
@@ -112,6 +117,7 @@
       overflow:hidden;
       cursor:pointer;
       height:100%;
+      min-height:140px;
     }
     .game-inner{
       position:relative;
@@ -155,7 +161,7 @@
       display:none;
     }
 
-    /* 🟦 Tamaños cuadrados */
+    /* 🟦 Tamaños cuadrados mejorados */
     .size-sm{grid-column:span 1;grid-row:span 1}
     .size-md{grid-column:span 2;grid-row:span 2}
     .size-lg{grid-column:span 3;grid-row:span 3}
@@ -210,6 +216,44 @@
     }
     .move-up:hover,.move-down:hover{background:var(--primary-dark)}
     .move-up:disabled,.move-down:disabled{background:#ccc;cursor:not-allowed}
+
+    /* Modal de edición */
+    .edit-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.7);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      z-index:1600;
+    }
+    .edit-card{
+      background:#fff;
+      border-radius:20px;
+      width:min(500px,90vw);
+      max-height:90vh;
+      overflow:auto;
+      padding:20px;
+      animation:zoomIn .35s ease;
+    }
+    .edit-card h3{
+      margin-top:0;
+      color:var(--primary);
+    }
+    .edit-actions{
+      display:flex;
+      gap:10px;
+      margin-top:20px;
+    }
+    .edit-actions button{
+      flex:1;
+    }
+    .btn-cancel{
+      background:#666;
+    }
+    .btn-cancel:hover{
+      background:#555;
+    }
 
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
@@ -345,25 +389,38 @@
       transition:transform .6s ease;
     }
     .mobile-overlay.rotate .mobile-diagonal{ display:none; }
-    /* The same diagonal works for rotate; parent device rotates */
 
     /* Hover solo en dispositivos con puntero fino (evita efectos en móviles) */
     @media (hover: none), (pointer: coarse) {
       .game:hover .game-inner{transform:none;box-shadow:none}
     }
 
-    /* Responsive grid: ajustar tamaño base de celda y spans para encajar sin huecos */
+    /* Responsive grid mejorado para evitar amontonamiento vertical */
     @media (max-width: 1024px){
-      .games-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); grid-auto-rows:140px; }
+      .games-grid{ 
+        grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); 
+        grid-auto-rows:140px; 
+        gap:12px;
+      }
       .size-lg{ grid-column:span 2; grid-row:span 2; }
     }
-    @media (max-width: 680px){
-      .games-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); grid-auto-rows:140px; }
+    @media (max-width: 768px){
+      .games-grid{ 
+        grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); 
+        grid-auto-rows:120px; 
+        gap:10px;
+        padding:16px 12px 24px;
+      }
       .size-md, .size-lg{ grid-column:span 1; grid-row:span 1; }
-      /* Forzar tarjetas cuadradas en móvil */
-      .game{ aspect-ratio:1/1; height:auto; }
-      .game-inner{ height:100%; }
-      /* Ocultar botón flotante de información en móvil */
+    }
+    @media (max-width: 480px){
+      .games-grid{ 
+        grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); 
+        grid-auto-rows:100px; 
+        gap:8px;
+        padding:12px 8px 20px;
+      }
+      .game{ min-height:100px; }
       .info-btn{ display:none; }
     }
   </style>
@@ -430,6 +487,35 @@
     <div id="mobileText" class="mobile-text">No disponible en smartphone</div>
   </div>
 
+  <!-- Modal de edición -->
+  <div id="editModal" class="edit-modal">
+    <div class="edit-card">
+      <h3>Editar Juego</h3>
+      <input type="text" id="editGameName" placeholder="Nombre del juego" />
+      <input type="text" id="editGameImg" placeholder="URL de la imagen" />
+      <input type="text" id="editGameVideo" placeholder="Nombre del archivo de video (opcional)" />
+      <input type="text" id="editGameEmbed" placeholder="URL embed" />
+      <select id="editGameCategory"></select>
+      <select id="editGameSize">
+        <option value="pequeño">Pequeño</option>
+        <option value="mediano">Mediano</option>
+        <option value="grande">Grande</option>
+      </select>
+      <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+        <input type="checkbox" id="editGameNoMobile" style="width:auto;margin:0;">
+        <label for="editGameNoMobile">No disponible en móvil</label>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+        <input type="checkbox" id="editGameRotateMobile" style="width:auto;margin:0;">
+        <label for="editGameRotateMobile">Girar móvil horizontalmente</label>
+      </div>
+      <div class="edit-actions">
+        <button id="btnSaveEdit">Guardar</button>
+        <button id="btnCancelEdit" class="btn-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="workersPanel" class="workers-panel" aria-hidden="true">
     <div class="panel">
       <h2><img src="logo.png" alt="Cantry"/> Acceso Privado</h2>
@@ -478,6 +564,7 @@
     let games = [];
     let categories = [];
     let activeCategory = 'Todos';
+    let editingGameIndex = -1;
 
     const grid = document.getElementById('grid');
     const searchInput = document.getElementById('searchInput');
@@ -499,6 +586,11 @@
     const infoWindow = document.getElementById("infoWindow");
     const closeInfo = document.getElementById("closeInfo");
 
+    // Modal de edición
+    const editModal = document.getElementById('editModal');
+    const btnSaveEdit = document.getElementById('btnSaveEdit');
+    const btnCancelEdit = document.getElementById('btnCancelEdit');
+
     infoBtn.addEventListener("click", ()=>{ infoWindow.classList.add('open'); });
     closeInfo.addEventListener("click", ()=>{ infoWindow.classList.remove('open'); });
 
@@ -514,6 +606,11 @@
     }
     async function apiDelete(path){
       const r = await fetch(path,{method:'DELETE'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    async function apiPut(path, body){
+      const r = await fetch(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       if(!r.ok) throw new Error('HTTP '+r.status);
       return r.json();
     }
@@ -630,6 +727,78 @@
         .catch(()=> alert('Error guardando juego'));
     });
 
+    // Funciones para editar juegos
+    function openEditModal(gameIndex) {
+      editingGameIndex = gameIndex;
+      const game = games[gameIndex];
+      
+      // Llenar el formulario con los datos del juego
+      document.getElementById('editGameName').value = game.name;
+      document.getElementById('editGameImg').value = game.img;
+      document.getElementById('editGameVideo').value = game.video || '';
+      document.getElementById('editGameEmbed').value = game.embed;
+      document.getElementById('editGameCategory').value = game.category || 'Acción';
+      document.getElementById('editGameSize').value = game.size || 'pequeño';
+      document.getElementById('editGameNoMobile').checked = game.noMobile || false;
+      document.getElementById('editGameRotateMobile').checked = game.rotateMobile || false;
+      
+      // Llenar las categorías en el select
+      const editCategorySelect = document.getElementById('editGameCategory');
+      editCategorySelect.innerHTML = '';
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        editCategorySelect.appendChild(option);
+      });
+      
+      editModal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      editModal.style.display = 'none';
+      editingGameIndex = -1;
+    }
+
+    btnSaveEdit.addEventListener('click', () => {
+      if (editingGameIndex === -1) return;
+      
+      const game = games[editingGameIndex];
+      const updatedGame = {
+        name: document.getElementById('editGameName').value.trim(),
+        img: document.getElementById('editGameImg').value.trim(),
+        video: document.getElementById('editGameVideo').value.trim(),
+        embed: document.getElementById('editGameEmbed').value.trim(),
+        category: document.getElementById('editGameCategory').value,
+        size: document.getElementById('editGameSize').value,
+        noMobile: document.getElementById('editGameNoMobile').checked,
+        rotateMobile: document.getElementById('editGameRotateMobile').checked
+      };
+      
+      if (!updatedGame.name || !updatedGame.img || !updatedGame.embed) {
+        alert('Completa nombre, imagen y embed');
+        return;
+      }
+      
+      // Actualizar el juego en el array local
+      Object.assign(game, updatedGame);
+      
+      // Aquí podrías hacer una llamada a la API para guardar los cambios
+      // Por ahora solo actualizamos localmente
+      renderGrid();
+      renderAdminLists();
+      closeEditModal();
+    });
+
+    btnCancelEdit.addEventListener('click', closeEditModal);
+    
+    // Cerrar modal de edición al hacer clic fuera
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        closeEditModal();
+      }
+    });
+
     function renderAdminLists(){
       const sel = document.getElementById('gameCategory');
       sel.innerHTML = '';
@@ -708,6 +877,12 @@
             renderAdminLists();
             renderGrid();
           }
+        });
+        
+        // Botón de editar
+        const editBtn = row.querySelector('.editGame');
+        editBtn.addEventListener('click', () => {
+          openEditModal(i);
         });
         
         list.appendChild(row);
