@@ -528,7 +528,7 @@
 
     function saveGameOrder() {
       const gameIds = games.map(game => game.id);
-      apiPost('/api/games/reorder', { gameIds })
+      apiPost('/api/games', { gameIds })
         .then(() => console.log('Orden guardado'))
         .catch(error => console.error('Error guardando orden:', error));
     }

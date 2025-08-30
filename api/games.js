@@ -12,7 +12,8 @@ async function ensureSchema(){
     category TEXT,
     size TEXT,
     noMobile BOOLEAN DEFAULT FALSE,
-    rotateMobile BOOLEAN DEFAULT FALSE
+    rotateMobile BOOLEAN DEFAULT FALSE,
+    position INTEGER DEFAULT 0
   )`;
 }
 
@@ -20,7 +21,7 @@ module.exports = async function handler(req, res){
   await ensureSchema();
   if(req.method === 'GET'){
     try{
-      const { rows } = await sql`SELECT * FROM games ORDER BY id DESC`;
+      const { rows } = await sql`SELECT * FROM games ORDER BY position ASC, id DESC`;
       // Normalize keys to camelCase for frontend consistency
       const normalized = rows.map(r => ({
         id: r.id,
@@ -32,6 +33,7 @@ module.exports = async function handler(req, res){
         size: r.size,
         noMobile: r.nomobile ?? r.noMobile ?? false,
         rotateMobile: r.rotatemobile ?? r.rotateMobile ?? false,
+        position: r.position ?? 0,
       }));
       res.status(200).json(normalized);
     }catch(e){
@@ -41,13 +43,29 @@ module.exports = async function handler(req, res){
   }
   if(req.method === 'POST'){
     try{
-      const { name, img, video, embed, category, size, noMobile, rotateMobile } = req.body || {};
+      const { name, img, video, embed, category, size, noMobile, rotateMobile, gameIds } = req.body || {};
+      
+      // Si es reordenamiento de juegos
+      if(gameIds && Array.isArray(gameIds)){
+        for(let i = 0; i < gameIds.length; i++){
+          await sql`UPDATE games SET position = ${i + 1} WHERE id = ${gameIds[i]}`;
+        }
+        res.status(200).json({ ok: true });
+        return;
+      }
+      
+      // Si es crear nuevo juego
       if(!name || !img || !embed){
         return res.status(400).json({ error:'Faltan campos obligatorios' });
       }
+      
+      // Obtener la posición más alta
+      const { rows: maxPosRows } = await sql`SELECT MAX(position) as maxPos FROM games`;
+      const nextPosition = (maxPosRows[0]?.maxpos || 0) + 1;
+      
       const { rows } = await sql`
-        INSERT INTO games(name,img,video,embed,category,size,noMobile,rotateMobile)
-        VALUES (${name}, ${img}, ${video||''}, ${embed}, ${category||'Acción'}, ${size||'pequeño'}, ${noMobile||false}, ${rotateMobile||false})
+        INSERT INTO games(name,img,video,embed,category,size,noMobile,rotateMobile,position)
+        VALUES (${name}, ${img}, ${video||''}, ${embed}, ${category||'Acción'}, ${size||'pequeño'}, ${noMobile||false}, ${rotateMobile||false}, ${nextPosition})
         RETURNING *
       `;
       res.status(201).json(rows[0]);
