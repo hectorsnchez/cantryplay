@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cantry Play</title>
+  <meta name="description" content="Cantry Play es tu nueva página web de juegos en la que disfrutarás de miles de juegos sin descargar nada. ¡Entra y descúbrelos! Cantry Play. " />
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1464866743902168"
+     crossorigin="anonymous"></script>
+
+  <link rel="icon" href="favicon.png" type="image/png" />
+
+  <!-- Montserrat 500 + 700 (Bold) -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#6e5ad5;
+      --primary-dark:#5a48c7;
+      --bg:#6e5ad5;
+      --card:#ffffff;
+      --chip:#f1f1f1;
+      --shadow:0 12px 28px rgba(0,0,0,.18);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Montserrat',system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:var(--bg);
+      color:#222;
+      overflow-x:hidden;
+    }
+
+    header{
+      position:fixed;
+      inset:20px 0 auto 0;
+      display:flex;
+      justify-content:center;
+      z-index:1000;
+      pointer-events:none;
+    }
+    .header-inner{
+      pointer-events:auto;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      background:var(--card);
+      padding:14px 20px;
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      width:min(950px,85vw);
+      animation:fadeDown .45s ease;
+      justify-content:center;
+    }
+    .logo{height:42px;width:auto;display:block;transition:transform .2s ease}
+    .logo:hover{transform:scale(1.08)}
+
+    /* 🔎 Buscador */
+    .search-wrap{flex:1;display:flex;justify-content:center}
+    .search-input{
+      width:min(560px,100%);
+      padding:10px 14px;
+      border:1px solid #ccc;
+      border-radius:30px;
+      background:#fff;
+      background-image:url('ico.png');
+      background-repeat:no-repeat;
+      background-position:14px center;
+      background-size:18px 18px;
+      padding-left:44px;
+      font-size:16px;transition:all .25s ease;
+    }
+    .search-input:focus{outline:none;transform:scale(1.03);box-shadow:0 0 12px rgba(110,90,213,.45)}
+
+    .search-popover{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top:calc(100% + 8px);
+      width:min(560px,100%);
+      background:#fff;
+      border-radius:14px;
+      border:1px solid #ccc;
+      box-shadow:0 14px 34px rgba(0,0,0,.15);
+      padding:12px;
+      display:none;
+      animation:fadeIn .2s ease; 
+    }
+
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{padding:6px 14px;border-radius:20px;background:var(--chip);cursor:pointer;transition:transform .15s,background .2s}
+    .chip:hover{transform:translateY(-1px)}
+    .chip.active{background:var(--primary);color:#fff}
+    .pop-sep{height:1px;background:#e9e9e9;margin:10px 0}
+    .workers-link{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--primary);text-decoration:underline;cursor:pointer}
+    .lock-ico{width:18px;height:18px;display:inline-block}
+
+    main{padding-top:120px}
+    
+    /* 🎮 Grid mejorado para evitar amontonamiento vertical */
+    .games-grid{
+      display:grid;
+      gap:16px;
+      padding:18px 20px 32px;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      grid-auto-rows:140px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    /* 🎮 Tarjetas cuadradas */
+    .game{
+      position:relative;
+      border-radius:20px;
+      overflow:hidden;
+      cursor:pointer;
+      height:100%;
+      min-height:140px;
+    }
+    .game-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius:20px;
+      overflow:hidden;
+      background:#000;
+      transition:transform .22s ease, box-shadow .22s ease;
+      will-change:transform;
+    }
+    .game img,
+    .game video.preview{
+      width:100%;height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .game:hover .game-inner{transform:translateY(-3px) scale(1.08);box-shadow:0 18px 44px rgba(0,0,0,.35);}
+
+    /* ✅ Nombre con sombra en vez de rectángulo */
+    .name-badge{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:-36px;
+      opacity:0;
+      color:#fff;
+      font-weight:700;
+      font-size:14px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+      transition:bottom .22s ease,opacity .22s ease;
+      pointer-events:none;
+    }
+    .game:hover .name-badge{bottom:12px;opacity:1}
+
+    .game video.preview{
+      position:absolute;
+      top:0;left:0;
+      width:100%;height:100%;
+      object-fit:cover;
+      display:none;
+    }
+
+    /* 🟦 Tamaños cuadrados mejorados */
+    .size-sm{grid-column:span 1;grid-row:span 1}
+    .size-md{grid-column:span 2;grid-row:span 2}
+    .size-lg{grid-column:span 3;grid-row:span 3}
+
+    /* 🔒 Paneles y modales mantienen igual */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center;z-index:1200}
+    .modal-card{background:#fff;width:82vw;height:82vh;max-width:1200px;border-radius:20px;padding:10px;display:flex;flex-direction:column;animation:zoomIn .35s ease}
+    .modal-card.hide{animation:zoomOut .32s ease forwards}
+    .modal-top{display:flex;justify-content:flex-end;gap:10px}
+    .icon-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s, background .2s}
+    .icon-btn:hover{transform:scale(1.08);background:var(--primary-dark)}
+    .modal-iframe{flex:1;border-radius:14px;border:none}
+
+    .workers-panel{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;justify-content:center;align-items:center;z-index:1500}
+    .panel{background:#fff;border-radius:20px;width:min(900px,92vw);max-height:92vh;overflow:auto;padding:20px;animation:zoomIn .35s ease}
+
+    .panel h2 img{height:40px;vertical-align:middle;margin-right:8px}
+    input,select{width:100%;margin:6px 0 10px;padding:10px;border-radius:12px;border:1px solid #d8d8d8;font-family:'Montserrat',sans-serif}
+    button{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:10px 14px;cursor:pointer}
+    button:hover{background:var(--primary-dark)}
+    
+    /* Drag & Drop para ordenar juegos */
+    .game-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px;
+      margin:4px 0;
+      background:#f8f9fa;
+      border-radius:8px;
+      cursor:grab;
+      transition:transform .2s, box-shadow .2s;
+    }
+    .game-item:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .game-item.dragging{opacity:0.5;cursor:grabbing}
+    .drag-handle{
+      cursor:grab;
+      color:#666;
+      font-size:18px;
+      user-select:none;
+    }
+    .game-info{flex:1}
+    .game-actions{display:flex;gap:8px}
+    .move-up,.move-down{
+      background:var(--primary);
+      color:#fff;
+      border:none;
+      border-radius:6px;
+      padding:4px 8px;
+      cursor:pointer;
+      font-size:12px;
+    }
+    .move-up:hover,.move-down:hover{background:var(--primary-dark)}
+    .move-up:disabled,.move-down:disabled{background:#ccc;cursor:not-allowed}
+
+    /* Modal de edición */
+    .edit-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.7);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      z-index:1600;
+    }
+    .edit-card{
+      background:#fff;
+      border-radius:20px;
+      width:min(500px,90vw);
+      max-height:90vh;
+      overflow:auto;
+      padding:20px;
+      animation:zoomIn .35s ease;
+    }
+    .edit-card h3{
+      margin-top:0;
+      color:var(--primary);
+    }
+    .edit-actions{
+      display:flex;
+      gap:10px;
+      margin-top:20px;
+    }
+    .edit-actions button{
+      flex:1;
+    }
+    .btn-cancel{
+      background:#666;
+    }
+    .btn-cancel:hover{
+      background:#555;
+    }
+
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes zoomIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+    @keyframes zoomOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.92)}}
+    @keyframes popCenter{from{opacity:0;transform:translate(-50%,-56%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+    @keyframes attentionPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+    /* 🔘 Botón flotante */
+    .info-btn{
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      background:var(--primary);
+      color:#fff;
+      font-weight:bold;
+      font-size:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,0.3);
+      z-index:2000;
+      user-select:none;
+      animation:attentionPulse 1.8s ease-in-out infinite;
+    }
+    .info-btn img{width:26px;height:26px;display:block}
+
+    /* 📄 Ventana info */
+    .info-window{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      width:min(640px,92vw);
+      max-height:80vh;
+      overflow:auto;
+      background:var(--primary);
+      color:#fff;
+      border-radius:14px;
+      padding:20px;
+      box-shadow:0 12px 28px rgba(0,0,0,.4);
+      display:none;
+      z-index:2001;
+    }
+    .info-window.open{display:block;animation:popCenter .35s ease}
+    .info-window .close{
+      position:absolute;
+      top:8px;
+      right:12px;
+      cursor:pointer;
+      font-size:18px;
+      font-weight:bold;
+    }
+    .info-window p{
+      margin:0;
+      margin-top:12px;
+      font-size:14px;
+      line-height:1.4;
+    }
+    /* Aparición escalonada de juegos */
+    .game.appear{animation:fadeDown .45s ease forwards}
+
+    /* Overlay de móvil antes de cargar juego */
+    .mobile-overlay{
+      position:fixed;
+      inset:0;
+      background:var(--primary);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      z-index:1300;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .3s ease, visibility .3s ease;
+    }
+    .mobile-overlay.show{
+      opacity:1;
+      visibility:visible;
+    }
+    .mobile-device{
+      width:120px;
+      height:200px;
+      border:3px solid #fff;
+      border-radius:20px;
+      background:transparent;
+      position:relative;
+      margin-bottom:20px;
+      transition:transform .6s ease;
+    }
+    .mobile-diagonal{
+      position:absolute;
+      left:-50%;
+      width:200%;
+      height:5px;
+      background:#fff;
+      top:50%;
+      transform:rotate(-45deg) translateY(-60%);
+      transform-origin:center;
+      opacity:0;
+      box-shadow:0 0 0 3px var(--primary);
+      border-radius:2px;
+      z-index:1;
+      pointer-events:none;
+    }
+    .mobile-overlay.show .mobile-diagonal{
+      animation:diagonalSweep 1.2s ease forwards;
+    }
+    @keyframes diagonalSweep{
+      0%{ opacity:0; transform:rotate(-45deg) translateY(-60%); }
+      20%{ opacity:1; }
+      100%{ opacity:1; transform:rotate(-45deg) translateY(0); }
+    }
+    .mobile-text{
+      color:#fff;
+      font-size:18px;
+      font-weight:500;
+      text-align:center;
+      opacity:0;
+      transform:translateY(10px);
+      transition:all .4s ease;
+    }
+    .mobile-text.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+    .mobile-overlay.rotate .mobile-device{
+      transform:rotate(90deg);
+      transition:transform .6s ease;
+    }
+    .mobile-overlay.rotate .mobile-diagonal{ display:none; }
+
+    /* Hover solo en dispositivos con puntero fino (evita efectos en móviles) */
+    @media (hover: none), (pointer: coarse) {
+      .game:hover .game-inner{transform:none;box-shadow:none}
+    }
+
+    /* Responsive grid mejorado para evitar amontonamiento vertical */
+    @media (max-width: 1024px){
+      .games-grid{ 
+        grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); 
+        grid-auto-rows:140px; 
+        gap:12px;
+      }
+      .size-lg{ grid-column:span 2; grid-row:span 2; }
+    }
+    @media (max-width: 768px){
+      .games-grid{ 
+        grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); 
+        grid-auto-rows:120px; 
+        gap:10px;
+        padding:16px 12px 24px;
+      }
+      .size-md, .size-lg{ grid-column:span 1; grid-row:span 1; }
+    }
+    @media (max-width: 480px){
+      .games-grid{ 
+        grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); 
+        grid-auto-rows:100px; 
+        gap:8px;
+        padding:12px 8px 20px;
+      }
+      .game{ min-height:100px; }
+      .info-btn{ display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="https://cantryplay.vercel.app" target="_self" rel="noopener">
+        <img src="logo.png" alt="Cantry" class="logo" />
+      </a>
+      <div class="search-wrap">
+        <!-- 🔎 Input sin icono -->
+        <input id="searchInput" type="text" class="search-input" placeholder="Buscar juegos..." autocomplete="off" />
+        <div id="searchPopover" class="search-popover" aria-hidden="true">
+          <div id="chipRow" class="chip-row"></div>
+          <div class="pop-sep"></div>
+          <div id="workersLink" class="workers-link">
+            <svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>
+            <span>Acceso Privado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="grid" class="games-grid"></section>
+  </main>
+
+  <!-- 🟣 Botón flotante info -->
+  <div class="info-btn" id="infoBtn"><img src="ico1.png" alt="Info"></div>
+  <div class="info-window" id="infoWindow">
+    <div class="close" id="closeInfo">✕</div>
+    <p>
+      Si le has dado a este botón, gracias. Me llamo Héctor Sánchez y tengo 14 años.  
+      Esta página fue creada con el propósito de que se puedan jugar a juegos en los institutos y colegios, que suelen bloquear las páginas de juegos.  
+      Verás que hay anuncios, y la verdad, es que muchos. No puedo controlar los que aparecen en los juegos ya que los juegos no los he creado yo, sino desarrolladores externos de GameMonetize.  
+      Y sí, gano algo cada vez que te aparece uno. Quiero donar mayor parte de los ingresos a fundaciones u ONGs, y ahora mismo me gustaría donar algo a palestina.  
+      Aunque los anuncios que aparecen son demasiados y me gustaría quitar muchos de ellos.  
+      Gracias por leerlo y espero que puedas disfrutar la web.
+    </p>
+  </div>
+
+  <div id="gameModal" class="modal" aria-hidden="true">
+    <div id="modalCard" class="modal-card">
+      <div class="modal-top">
+        <button id="btnClose" class="icon-btn" title="Cerrar" aria-label="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <button id="btnFull" class="icon-btn" title="Pantalla completa" aria-label="Pantalla completa">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
+      </div>
+      <iframe id="gameFrame" class="modal-iframe" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- Overlay de móvil antes de cargar juego -->
+  <div id="mobileOverlay" class="mobile-overlay">
+    <div class="mobile-device">
+      <div class="mobile-diagonal"></div>
+    </div>
+    <div id="mobileText" class="mobile-text">No disponible en smartphone</div>
+  </div>
+
+  <!-- Modal de edición -->
+  <div id="editModal" class="edit-modal">
+    <div class="edit-card">
+      <h3>Editar Juego</h3>
+      <input type="text" id="editGameName" placeholder="Nombre del juego" />
+      <input type="text" id="editGameImg" placeholder="URL de la imagen" />
+      <input type="text" id="editGameVideo" placeholder="Nombre del archivo de video (opcional)" />
+      <input type="text" id="editGameEmbed" placeholder="URL embed" />
+      <select id="editGameCategory"></select>
+      <select id="editGameSize">
+        <option value="pequeño">Pequeño</option>
+        <option value="mediano">Mediano</option>
+        <option value="grande">Grande</option>
+      </select>
+      <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+        <input type="checkbox" id="editGameNoMobile" style="width:auto;margin:0;">
+        <label for="editGameNoMobile">No disponible en móvil</label>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+        <input type="checkbox" id="editGameRotateMobile" style="width:auto;margin:0;">
+        <label for="editGameRotateMobile">Girar móvil horizontalmente</label>
+      </div>
+      <div class="edit-actions">
+        <button id="btnSaveEdit">Guardar</button>
+        <button id="btnCancelEdit" class="btn-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="workersPanel" class="workers-panel" aria-hidden="true">
+    <div class="panel">
+      <h2><img src="logo.png" alt="Cantry"/> Acceso Privado</h2>
+      <div id="workersLogin">
+        <p>Introduce código de acceso:</p>
+        <input type="password" id="codeInput" inputmode="numeric" placeholder="Introducir contraseña" />
+        <button id="btnEnter">Entrar</button>
+      </div>
+
+      <div id="adminPanel" style="display:none">
+        <h3>Gestión de juegos</h3>
+        <input type="text" id="gameName" placeholder="Nombre del juego" />
+        <input type="text" id="gameImg" placeholder="URL de la imagen" />
+        <input type="text" id="gameVideo" placeholder="Nombre del archivo de video (opcional)" />
+        <input type="text" id="gameEmbed" placeholder="URL embed" />
+        <select id="gameCategory"></select>
+        <select id="gameSize">
+          <option value="pequeño">Pequeño</option>
+          <option value="mediano">Mediano</option>
+          <option value="grande">Grande</option>
+        </select>
+        <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+          <input type="checkbox" id="gameNoMobile" style="width:auto;margin:0;">
+          <label for="gameNoMobile">No disponible en móvil</label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+          <input type="checkbox" id="gameRotateMobile" style="width:auto;margin:0;">
+          <label for="gameRotateMobile">Girar móvil horizontalmente</label>
+        </div>
+        <button id="btnAddGame">Añadir juego</button>
+
+        <hr />
+        <h3>Gestión de categorías</h3>
+        <input type="text" id="newCategory" placeholder="Nueva categoría" />
+        <button id="btnAddCat">Añadir categoría</button>
+        <div id="categoriesList"></div>
+
+        <hr />
+        <h3>Juegos actuales</h3>
+        <div id="gamesList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let games = [];
+    let categories = [];
+    let activeCategory = 'Todos';
+    let editingGameIndex = -1;
+
+    const grid = document.getElementById('grid');
+    const searchInput = document.getElementById('searchInput');
+    const popover = document.getElementById('searchPopover');
+    const chipRow = document.getElementById('chipRow');
+    const workersLink = document.getElementById('workersLink');
+
+    const workersPanel = document.getElementById('workersPanel');
+    const workersLogin = document.getElementById('workersLogin');
+    const adminPanel  = document.getElementById('adminPanel');
+
+    const gameFrame  = document.getElementById('gameFrame');
+    const gameModal  = document.getElementById('gameModal');
+    const modalCard  = document.getElementById('modalCard');
+    const btnClose   = document.getElementById('btnClose');
+    const btnFull    = document.getElementById('btnFull');
+
+    const infoBtn = document.getElementById("infoBtn");
+    const infoWindow = document.getElementById("infoWindow");
+    const closeInfo = document.getElementById("closeInfo");
+
+    // Modal de edición
+    const editModal = document.getElementById('editModal');
+    const btnSaveEdit = document.getElementById('btnSaveEdit');
+    const btnCancelEdit = document.getElementById('btnCancelEdit');
+
+    infoBtn.addEventListener("click", ()=>{ infoWindow.classList.add('open'); });
+    closeInfo.addEventListener("click", ()=>{ infoWindow.classList.remove('open'); });
+
+    async function apiGet(path){
+      const r = await fetch(path);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    async function apiPost(path, body){
+      const r = await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    async function apiDelete(path){
+      const r = await fetch(path,{method:'DELETE'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    async function apiPut(path, body){
+      const r = await fetch(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+
+    function sizeClass(sz){
+      if(sz === 'grande') return 'size-lg';
+      if(sz === 'mediano') return 'size-md';
+      return 'size-sm';
+    }
+
+    function renderChips(){
+      chipRow.innerHTML = '';
+      const all = document.createElement('span');
+      all.className = 'chip' + (activeCategory==='Todos'?' active':'');
+      all.textContent = 'Todos';
+      all.addEventListener('click',()=>{activeCategory='Todos';updateFilterUI();});
+      chipRow.appendChild(all);
+      categories.forEach(cat=>{
+        const el = document.createElement('span');
+        el.className = 'chip' + (activeCategory===cat?' active':'');
+        el.textContent = cat;
+        el.addEventListener('click',()=>{activeCategory=cat;updateFilterUI();});
+        chipRow.appendChild(el);
+      });
+    }
+
+    function filteredGames(){
+      const term = searchInput.value.trim().toLowerCase();
+      return games.filter(g => {
+        const okCat = (activeCategory==='Todos' || g.category === activeCategory);
+        const okText = term === '' || g.name.toLowerCase().includes(term) || (g.category||'').toLowerCase().includes(term);
+        return okCat && okText;
+      });
+    }
+
+    function renderGrid(){
+      grid.innerHTML = '';
+      filteredGames().forEach((g, i)=>{
+        const card = document.createElement('div');
+        card.className = `game ${sizeClass(g.size)}`;
+        card.innerHTML = `
+          <div class="game-inner">
+            <img src="${g.img}" alt="${g.name}" class="thumb">
+            ${g.video ? `<video class="preview" src="${g.video}" loop muted></video>` : ""}
+            <div class='name-badge'>${g.name}</div>
+          </div>
+        `;
+        card.classList.add('appear');
+        card.style.animationDelay = `${i*0.06}s`;
+        card.addEventListener('click', ()=> openGame(g.embed, g.noMobile, g.rotateMobile));
+        if(g.video){
+          card.addEventListener('mouseenter', ()=>{
+            const v = card.querySelector('.preview');
+            v.style.display='block';
+            v.play();
+          });
+          card.addEventListener('mouseleave', ()=>{
+            const v = card.querySelector('.preview');
+            v.pause();
+            v.currentTime=0;
+            v.style.display='none';
+          });
+        }
+        grid.appendChild(card);
+      });
+    }
+
+    function updateFilterUI(){
+      renderChips();
+      renderGrid();
+    }
+
+    const showPopover = () => {popover.style.display='block'};
+    const hidePopover = () => {popover.style.display='none'};
+
+    searchInput.addEventListener('focus', showPopover);
+    searchInput.addEventListener('input', ()=>{ renderGrid(); });
+
+    document.addEventListener('mousedown', (e)=>{
+      const within = e.target.closest('.header-inner');
+      if(!within) hidePopover();
+    });
+
+    workersLink.addEventListener('click', ()=>{ workersPanel.style.display='flex'; hidePopover(); });
+
+    document.getElementById('btnEnter').addEventListener('click', ()=>{
+      const code = document.getElementById('codeInput').value;
+      if(code === '2729'){
+        workersLogin.style.display='none';
+        adminPanel.style.display='block';
+        renderAdminLists();
+      }else{
+        alert('Código incorrecto');
+      }
+    });
+
+    workersPanel.addEventListener('click', (e)=>{
+      if(e.target === workersPanel){ workersPanel.style.display='none'; }
+    });
+
+    document.getElementById('btnAddGame').addEventListener('click', ()=>{
+      const name = document.getElementById('gameName').value.trim();
+      const img  = document.getElementById('gameImg').value.trim();
+      const vid  = document.getElementById('gameVideo').value.trim();
+      const emb  = document.getElementById('gameEmbed').value.trim();
+      const cat  = document.getElementById('gameCategory').value;
+      const sz   = document.getElementById('gameSize').value;
+      const nomobile = document.getElementById('gameNoMobile').checked;
+      const rotatemobile = document.getElementById('gameRotateMobile').checked;
+
+      if(!name || !img || !emb){ alert('Completa nombre, imagen y embed'); return; }
+      apiPost('/api/games', {name: name, img: img, video: vid, embed: emb, category: cat, size: sz, noMobile: nomobile, rotateMobile: rotatemobile})
+        .then((row)=>{ games.unshift(row); renderGrid(); renderAdminLists(); })
+        .catch(()=> alert('Error guardando juego'));
+    });
+
+    // Funciones para editar juegos
+    function openEditModal(gameIndex) {
+      editingGameIndex = gameIndex;
+      const game = games[gameIndex];
+      
+      // Llenar el formulario con los datos del juego
+      document.getElementById('editGameName').value = game.name;
+      document.getElementById('editGameImg').value = game.img;
+      document.getElementById('editGameVideo').value = game.video || '';
+      document.getElementById('editGameEmbed').value = game.embed;
+      document.getElementById('editGameCategory').value = game.category || 'Acción';
+      document.getElementById('editGameSize').value = game.size || 'pequeño';
+      document.getElementById('editGameNoMobile').checked = game.noMobile || false;
+      document.getElementById('editGameRotateMobile').checked = game.rotateMobile || false;
+      
+      // Llenar las categorías en el select
+      const editCategorySelect = document.getElementById('editGameCategory');
+      editCategorySelect.innerHTML = '';
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        editCategorySelect.appendChild(option);
+      });
+      
+      editModal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      editModal.style.display = 'none';
+      editingGameIndex = -1;
+    }
+
+    btnSaveEdit.addEventListener('click', () => {
+      if (editingGameIndex === -1) return;
+      
+      const game = games[editingGameIndex];
+      const updatedGame = {
+        name: document.getElementById('editGameName').value.trim(),
+        img: document.getElementById('editGameImg').value.trim(),
+        video: document.getElementById('editGameVideo').value.trim(),
+        embed: document.getElementById('editGameEmbed').value.trim(),
+        category: document.getElementById('editGameCategory').value,
+        size: document.getElementById('editGameSize').value,
+        noMobile: document.getElementById('editGameNoMobile').checked,
+        rotateMobile: document.getElementById('editGameRotateMobile').checked
+      };
+      
+      if (!updatedGame.name || !updatedGame.img || !updatedGame.embed) {
+        alert('Completa nombre, imagen y embed');
+        return;
+      }
+      
+      // Actualizar el juego en el array local
+      Object.assign(game, updatedGame);
+      
+      // Aquí podrías hacer una llamada a la API para guardar los cambios
+      // Por ahora solo actualizamos localmente
+      renderGrid();
+      renderAdminLists();
+      closeEditModal();
+    });
+
+    btnCancelEdit.addEventListener('click', closeEditModal);
+    
+    // Cerrar modal de edición al hacer clic fuera
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        closeEditModal();
+      }
+    });
+
+    function renderAdminLists(){
+      const sel = document.getElementById('gameCategory');
+      sel.innerHTML = '';
+      categories.forEach(c=>{
+        const o = document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o);
+      });
+
+      const catList = document.getElementById('categoriesList');
+      catList.innerHTML='';
+      categories.forEach((c,idx)=>{
+        const row = document.createElement('div');
+        row.style.margin = '6px 0';
+        row.innerHTML = `${c} <button data-i='${idx}' class='delCat'>Eliminar</button>`;
+        catList.appendChild(row);
+      });
+      catList.querySelectorAll('.delCat').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const i = +e.target.getAttribute('data-i');
+          const removed = categories[i];
+          apiDelete('/api/categories?name='+encodeURIComponent(removed))
+            .then(()=> Promise.all([apiGet('/api/categories'), apiGet('/api/games')]))
+            .then(([cats, gs])=>{ categories=cats; games=gs; updateFilterUI(); renderAdminLists(); })
+            .catch(()=> alert('Error eliminando categoría'));
+        });
+      });
+
+      const list = document.getElementById('gamesList');
+      list.innerHTML='';
+      games.forEach((g,i)=>{
+        const row = document.createElement('div');
+        row.className = 'game-item';
+        row.draggable = true;
+        row.dataset.index = i;
+        const mobileInfo = [];
+        if(g.noMobile) mobileInfo.push('📱 No móvil');
+        if(g.rotateMobile) mobileInfo.push('🔄 Girar');
+        
+        row.innerHTML = `
+          <span class="drag-handle">⋮⋮</span>
+          <div class="game-info">
+            <b>${g.name}</b> – ${g.category} – ${g.size}
+            ${mobileInfo.length > 0 ? `<br><small style="color:#666;">${mobileInfo.join(' • ')}</small>` : ''}
+          </div>
+          <div class="game-actions">
+            <button class="move-up" ${i === 0 ? 'disabled' : ''}>↑</button>
+            <button class="move-down" ${i === games.length - 1 ? 'disabled' : ''}>↓</button>
+            <button data-i='${i}' class='editGame'>Editar</button>
+            <button data-i='${i}' class='delGame'>Eliminar</button>
+          </div>
+        `;
+        
+        // Eventos para drag & drop
+        row.addEventListener('dragstart', (e) => {
+          e.target.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', i);
+        });
+        row.addEventListener('dragend', (e) => {
+          e.target.classList.remove('dragging');
+        });
+        
+        // Botones de mover arriba/abajo
+        const moveUp = row.querySelector('.move-up');
+        const moveDown = row.querySelector('.move-down');
+        
+        moveUp.addEventListener('click', () => {
+          if (i > 0) {
+            [games[i], games[i-1]] = [games[i-1], games[i]];
+            renderAdminLists();
+            renderGrid();
+          }
+        });
+        
+        moveDown.addEventListener('click', () => {
+          if (i < games.length - 1) {
+            [games[i], games[i+1]] = [games[i+1], games[i]];
+            renderAdminLists();
+            renderGrid();
+          }
+        });
+        
+        // Botón de editar
+        const editBtn = row.querySelector('.editGame');
+        editBtn.addEventListener('click', () => {
+          openEditModal(i);
+        });
+        
+        list.appendChild(row);
+      });
+      
+      // Drag & drop entre elementos
+      list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const dragging = list.querySelector('.dragging');
+        if (!dragging) return;
+        
+        const afterElement = getDragAfterElement(list, e.clientY);
+        if (afterElement == null) {
+          list.appendChild(dragging);
+        } else {
+          list.insertBefore(dragging, afterElement);
+        }
+      });
+      
+      list.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        const newIndex = Array.from(list.children).indexOf(e.target.closest('.game-item'));
+        
+        if (draggedIndex !== newIndex && newIndex !== -1) {
+          const [movedGame] = games.splice(draggedIndex, 1);
+          games.splice(newIndex, 0, movedGame);
+          renderAdminLists();
+          renderGrid();
+        }
+      });
+      
+      // Eventos para eliminar juegos
+      list.querySelectorAll('.delGame').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const i = +e.target.getAttribute('data-i');
+          const id = games[i].id;
+          apiDelete('/api/games?id='+id)
+            .then(()=>{ games.splice(i,1); renderGrid(); renderAdminLists(); })
+            .catch(()=> alert('Error eliminando juego'));
+        });
+      });
+    }
+    
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.game-item:not(.dragging)')];
+      
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    document.getElementById('btnAddCat').addEventListener('click', ()=>{
+      const val = document.getElementById('newCategory').value.trim();
+      if(!val) return;
+      if(!categories.includes(val)){
+        apiPost('/api/categories', {name: val})
+          .then(()=> apiGet('/api/categories'))
+          .then(cats=>{ categories=cats; renderChips(); renderAdminLists(); })
+          .catch(()=> alert('Error guardando categoría'));
+      }
+    });
+
+    function openGame(embed, nomobile = false, rotatemobile = false){
+      const mobileOverlay = document.getElementById('mobileOverlay');
+      const mobileText = document.getElementById('mobileText');
+      const mobileDevice = document.querySelector('.mobile-device');
+      
+      if(nomobile || rotatemobile){
+        // Mostrar overlay de móvil
+        mobileOverlay.classList.add('show');
+        // Asegurar estado inicial sin rotación, luego añadir en el siguiente frame para forzar transición
+        mobileOverlay.classList.remove('rotate');
+        mobileText.textContent = rotatemobile ? 'Girar el móvil horizontalmente' : 'No disponible en smartphone';
+        requestAnimationFrame(() => {
+          if(rotatemobile){
+            mobileOverlay.classList.add('rotate');
+          }
+        });
+        
+        // Secuencia de animaciones
+        // Reiniciar animación del dispositivo y diagonal
+        mobileDevice.style.animation = 'none';
+        const diagonal = mobileDevice.querySelector('.mobile-diagonal');
+        if(diagonal){ diagonal.style.animation = 'none'; void diagonal.offsetWidth; diagonal.style.animation = ''; }
+        void mobileDevice.offsetWidth; // reflow
+        
+        mobileText.classList.remove('show');
+        setTimeout(() => { mobileText.classList.add('show'); }, 50);
+        
+        setTimeout(() => {
+          mobileText.classList.remove('show');
+          mobileOverlay.classList.remove('show', 'rotate');
+          // Cargar el juego después de las animaciones
+          setTimeout(() => {
+            gameFrame.src = embed;
+            gameModal.style.display='flex';
+            modalCard.classList.remove('hide');
+          }, 300);
+        }, 2000);
+      } else {
+        // Cargar directamente sin overlay
+        gameFrame.src = embed;
+        gameModal.style.display='flex';
+        modalCard.classList.remove('hide');
+      }
+    }
+    btnClose.addEventListener('click', ()=>{
+      modalCard.classList.add('hide');
+      setTimeout(()=>{ gameModal.style.display='none'; gameFrame.src=''; modalCard.classList.remove('hide'); }, 320);
+    });
+    btnFull.addEventListener('click', ()=>{
+      if(gameFrame.requestFullscreen) gameFrame.requestFullscreen();
+    });
+
+    Promise.all([apiGet('/api/categories'), apiGet('/api/games')])
+      .then(([cats, gs])=>{ categories=cats; games=gs; renderChips(); renderGrid(); })
+      .catch(()=>{
+        categories = ["Acción","Aventura","Puzzle","Deportes","Estrategia"];
+        games = [];
+        renderChips();
+        renderGrid();
+      });
+  </script>
+</body>
+</html>
