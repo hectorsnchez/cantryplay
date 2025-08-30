@@ -526,6 +526,13 @@
       return r.json();
     }
 
+    function saveGameOrder() {
+      const gameIds = games.map(game => game.id);
+      apiPost('/api/games/reorder', { gameIds })
+        .then(() => console.log('Orden guardado'))
+        .catch(error => console.error('Error guardando orden:', error));
+    }
+
     function sizeClass(sz){
       if(sz === 'grande') return 'size-lg';
       if(sz === 'mediano') return 'size-md';
@@ -781,6 +788,7 @@
         moveUp.addEventListener('click', () => {
           if (i > 0) {
             [games[i], games[i-1]] = [games[i-1], games[i]];
+            saveGameOrder();
             renderAdminLists();
             renderGrid();
           }
@@ -789,6 +797,7 @@
         moveDown.addEventListener('click', () => {
           if (i < games.length - 1) {
             [games[i], games[i+1]] = [games[i+1], games[i]];
+            saveGameOrder();
             renderAdminLists();
             renderGrid();
           }
@@ -821,6 +830,7 @@
         if (draggedIndex !== newIndex && newIndex !== -1) {
           const [movedGame] = games.splice(draggedIndex, 1);
           games.splice(newIndex, 0, movedGame);
+          saveGameOrder();
           renderAdminLists();
           renderGrid();
         }
